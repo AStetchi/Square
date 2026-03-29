@@ -1,4 +1,4 @@
-def main():
+def main(file):
     print("Hello from square!")
 
 
