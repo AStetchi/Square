@@ -43,5 +43,6 @@ def test_leading_zeros_handling():
     assert int_encode(b"03") == 3
 
 
-def test_negative_zero():
-    assert int_encode(b"-0") == 0
+def test_negative_zero_is_invalid():
+    with pytest.raises(ValueError):
+        int_encode(b"-0")
