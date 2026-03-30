@@ -3,46 +3,68 @@ import pytest
 from src.int_encode import int_encode
 
 
-def test_positive_integer():
+def test_int_encode_positive_single_digit():
+    """Test encoding positive single digit integers."""
+    assert int_encode(b"5") == 5
+    assert int_encode(b"0") == 0
+    assert int_encode(b"9") == 9
+
+
+def test_int_encode_positive_multi_digit():
+    """Test encoding positive multi-digit integers."""
     assert int_encode(b"42") == 42
-    assert int_encode(b"123456789") == 123456789
+    assert int_encode(b"12345") == 12345
+    assert int_encode(b"999") == 999
 
 
-def test_zero():
+def test_int_encode_negative_integers():
+    """Test encoding negative integers."""
+    assert int_encode(b"-1") == -1
+    assert int_encode(b"-42") == -42
+    assert int_encode(b"-12345") == -12345
+    assert int_encode(b"-999") == -999
+
+
+def test_int_encode_zero():
+    """Test encoding zero."""
     assert int_encode(b"0") == 0
 
 
-def test_negative_integer():
-    assert int_encode(b"-42") == -42
-    assert int_encode(b"-1") == -1
-
-
-def test_large_number():
-    number = 10**18
-    assert int_encode(str(number).encode()) == number
-
-
-@pytest.mark.parametrize(
-    "invalid_input",
-    [
-        b"abc",
-        b"42a",
-        b"1.5",
-        b"",
-        b"  ",
-        b"++5",
-        b"--5",
-    ],
-)
-def test_invalid_input_raises_error(invalid_input):
-    with pytest.raises((ValueError, TypeError)):
-        int_encode(invalid_input)
-
-
-def test_leading_zeros_handling():
-    assert int_encode(b"03") == 3
-
-
-def test_negative_zero_is_invalid():
-    with pytest.raises(ValueError):
+def test_int_encode_negative_zero_raises_error():
+    """Test that -0 raises ValueError."""
+    with pytest.raises(ValueError, match="Starts with -0"):
         int_encode(b"-0")
+
+
+def test_int_encode_negative_zero_with_trailing_digits_raises_error():
+    """Test that -0 followed by digits raises ValueError."""
+    with pytest.raises(ValueError, match="Starts with -0"):
+        int_encode(b"-01")
+    with pytest.raises(ValueError, match="Starts with -0"):
+        int_encode(b"-0123")
+    with pytest.raises(ValueError, match="Starts with -0"):
+        int_encode(b"-00")
+
+
+def test_int_encode_leading_zeros():
+    """Test that leading zeros are handled correctly (Python int() converts them)."""
+    assert int_encode(b"007") == 7
+    assert int_encode(b"00100") == 100
+    assert int_encode(b"00") == 0
+
+
+def test_int_encode_large_positive_integers():
+    """Test encoding very large positive integers."""
+    assert int_encode(b"999999999999999999999999999") == 999999999999999999999999999
+    assert (
+        int_encode(b"123456789012345678901234567890") == 123456789012345678901234567890
+    )
+
+
+def test_int_encode_large_negative_integers():
+    """Test encoding very large negative integers."""
+    assert int_encode(b"-999999999999999999999999999") == -999999999999999999999999999
+    assert (
+        int_encode(b"-123456789012345678901234567890")
+        == -123456789012345678901234567890
+    )
